@@ -57,7 +57,7 @@
 ##==========================================================================
 
 # The pre-processor and compiler options.
-MY_CFLAGS = `pkg-config --cflags gtk+-3.0`
+MY_CFLAGS = `pkg-config --cflags gtk+-3.0`  -export-dynamic
 
 # The linker options.
 MY_LIBS   = `pkg-config --libs gtk+-3.0` -lpcap -lpthread 
