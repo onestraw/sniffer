@@ -19,7 +19,7 @@
 - sudo ./sniffer
 
 ##Screenshot
-![sniffer](screenshot.png)
+![sniffer](run-screenshot.png)
 
 ##About
 

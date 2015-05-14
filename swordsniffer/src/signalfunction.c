@@ -1249,7 +1249,7 @@ void show_raw_packet(u_int caplen, const u_char * packet)
 	gtk_text_buffer_get_iter_at_offset(buffer2, &iter2, 0);
 	gtk_text_buffer_get_iter_at_offset(buffer3, &iter3, 0);
 	u_char hex[10];
-	u_char str[3];
+	u_char str[17];
 	u_char *ch;
 	u_int i, j;
 	for (i = 0; i < caplen; i += 16) {
