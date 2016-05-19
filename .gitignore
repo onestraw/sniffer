@@ -3,5 +3,6 @@
 *.d
 *.cap
 core
+sniffer
 tags
 cscope.out

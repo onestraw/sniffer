@@ -16,11 +16,11 @@ enum
 struct packet_info *phead = NULL;
 
 struct simple_packet{
-	 u_char src_ip[42];
-	 u_char dst_ip[42];//大小为40,是为了存储ipv6
-	 u_char protocol[5];
+	 char src_ip[42];
+	 char dst_ip[42];//大小为40,是为了存储ipv6
+	 char protocol[16];
 	 u_int len;
-	 u_char summary[100];
+	 char summary[100];
 }spacket;
 
 /*
@@ -32,7 +32,6 @@ int find_interfaces(int *n)
 	int ret, k;
 	pcap_if_t *alldevsp;
 	char errbuf[PCAP_ERRBUF_SIZE];
-	bpf_u_int32 net, mask;
 
 	ret = pcap_findalldevs(&alldevsp, errbuf);
 	if (ret == -1) 
@@ -78,9 +77,9 @@ tcp_callback(u_char * arg, const struct pcap_pkthdr *pkthdr,
 	ack = ntohl(hdr->tcp_ack);
 	
 	if(src_port ==80 ||dst_port==80)
-		sprintf(spacket.protocol,"HTTP");
+		strcpy(spacket.protocol,"HTTP");
 	else	
-		sprintf(spacket.protocol,"TCP");
+		strcpy(spacket.protocol,"TCP");
 	sprintf(spacket.summary,"DstPort=%u, SrcPort=%u, Seq=%u, Ack=%u",dst_port, src_port, seq, ack);
 }
 
@@ -113,40 +112,40 @@ icmp_callback(u_char * arg, const struct pcap_pkthdr *pkthdr,
 
 	switch (hdr->icmp_type) {
 	case 8:
-		sprintf(spacket.summary, "ICMP Echo Request");
+		strcpy(spacket.summary, "ICMP Echo Request");
 		break;
 	case 0:
-		sprintf(spacket.summary, "ICMP Echo Reply");
+		strcpy(spacket.summary, "ICMP Echo Reply");
 		break;
 	case 3:
-	    sprintf(spacket.summary, "ICMP Unreachable");
+	    strcpy(spacket.summary, "ICMP Unreachable");
 	    break;
 	case 4:
-	    sprintf(spacket.summary, "Source quench 源抑制");
+	    strcpy(spacket.summary, "Source quench 源抑制");
 	    break;
 	case 5:
-	    sprintf(spacket.summary, "ICMP Redirect 重定向");
+	    strcpy(spacket.summary, "ICMP Redirect 重定向");
 	    break;
 	case 9:
-	    sprintf(spacket.summary, "Router Advertisement");
+	    strcpy(spacket.summary, "Router Advertisement");
 	    break;
 	case 10:
-	    sprintf(spacket.summary, "Router Solicitation");
+	    strcpy(spacket.summary, "Router Solicitation");
 	    break;
 	case 11:
-	    sprintf(spacket.summary, "Time Exceeded");
+	    strcpy(spacket.summary, "Time Exceeded");
 	    break;
 	case 13:
-	    sprintf(spacket.summary, "ICMP Timestamp Request");
+	    strcpy(spacket.summary, "ICMP Timestamp Request");
 	    break;
 	case 14:
-	    sprintf(spacket.summary, "ICMP Timestamp Reply");
+	    strcpy(spacket.summary, "ICMP Timestamp Reply");
 	    break;
 	case 17:
-	    sprintf(spacket.summary, "Address Mask Request");
+	    strcpy(spacket.summary, "Address Mask Request");
 	    break;
 	case 18:
-	    sprintf(spacket.summary, "Address Mask Reply");
+	    strcpy(spacket.summary, "Address Mask Reply");
 	    break;
 	default:
 		break;
@@ -160,9 +159,9 @@ void ipv6_callback(u_char * arg, const struct pcap_pkthdr *pkthdr,
 	struct ipv6_header *hdr;
 	hdr = (struct ipv6_header*)(packet +14);
 	int i;
-	u_char src[50], dst[50], stemp[5],dtemp[5];
-	sprintf(src,"");
-	sprintf(dst,"");
+	char src[50], dst[50], stemp[5],dtemp[5];
+	memset(src, 0, sizeof(src));
+	memset(dst, 0, sizeof(dst));
 	for(i=1;i<=16;i++)
 	{
 		if(i%2 == 0 && i<16)
@@ -219,15 +218,14 @@ arp_callback(u_char * arg, const struct pcap_pkthdr *pkthdr,
 	struct arp_header *hdr;	
 	hdr = (struct arp_header *)(packet + 14);	
 
-	struct in_addr spa[4];
-	struct in_addr tpa[4];
 	u_short oper;
 	oper = ntohs(hdr->oper);
 
 	char src_mac[20];
 	char str[5];
 	int i;
-	sprintf(src_mac, "");
+	memset(src_mac, 0, sizeof(src_mac));
+
 	for (i = 0; i < 6; i++)
 	{
 		sprintf(str,"%02X:", hdr->sha[i]);
@@ -268,6 +266,7 @@ arp_callback(u_char * arg, const struct pcap_pkthdr *pkthdr,
 
 }
 
+#define zero(s)	memset(s, 0, sizeof(s))
 void
 ether_callback(u_char * arg, const struct pcap_pkthdr *pkthdr,
 	       const u_char * packet)
@@ -275,16 +274,17 @@ ether_callback(u_char * arg, const struct pcap_pkthdr *pkthdr,
 	static int packet_num = 0;
 	packet_num++;
 	alln ++;
-	sprintf(spacket.src_ip,"");
-	sprintf(spacket.dst_ip,"");
-	sprintf(spacket.protocol,"");
-	sprintf(spacket.summary,"");
+	zero(spacket.src_ip);
+	zero(spacket.dst_ip);
+	zero(spacket.protocol);
+	zero(spacket.summary);
 	spacket.len = pkthdr->caplen; //单位是字节
 	
 	struct ether_header *hdr;
 	hdr = (struct ether_header *)packet;
 	u_short eth_type;
 	eth_type = ntohs(hdr->ether_type);
+
 	if(eth_type==0x0800||eth_type==0x0806||eth_type==0x86dd)
 	{
 		//dump to a cap file
@@ -313,7 +313,7 @@ ether_callback(u_char * arg, const struct pcap_pkthdr *pkthdr,
 	sprintf(timenow ,"%s", asctime(localtime(&pkthdr->ts.tv_sec)));
 	timenow[strlen(timenow)-1] = '\0';
 	/*从输入参数的包头结构体指针pkthdr获取捕获时间*/
-	sprintf(time_str,"%s (%uus)", timenow, pkthdr->ts.tv_usec);
+	sprintf(time_str,"%s (%06ld)", timenow, (long)pkthdr->ts.tv_usec);
 	
 	char nostr[6];
 	sprintf(nostr, "%d", packet_num);

@@ -63,7 +63,6 @@ void edit_packet_list_view(GtkWidget * view)
  */
 void edit_interface_list_view(GtkWidget * view, int if_num)
 {
-	GtkTreeViewColumn *col;
 	GtkCellRenderer *renderer;
 	GtkTreeModel *model;
 	GtkTreeIter iter;
@@ -102,7 +101,7 @@ void edit_interface_list_view(GtkWidget * view, int if_num)
  */
 void
 on_imagemenuitem_interface_activate(GtkMenuItem * menuitem,
-				    GtkWindow * if_window)
+				    GtkWidget * if_window)
 {
 
 	int ret;
@@ -225,7 +224,7 @@ void on_imagemenuitem_statistics_activate(GtkMenuItem * menuitem,
 	gtk_widget_show(GTK_WIDGET(stat_window));
 	GtkWidget *arps_entry, *icmps_entry, *udps_entry, *tcps_entry,
 	    *ips_entry, *all_entry;
-	u_char arps[10], icmps[10], udps[10], tcps[10], ips[10], all[10];
+	char arps[10], icmps[10], udps[10], tcps[10], ips[10], all[10];
 
 	sprintf(arps, "%d", arpn);
 	sprintf(icmps, "%d", icmpn);
@@ -499,7 +498,7 @@ show_single_packet(int pktno, struct pcap_pkthdr *pkthdr, const u_char * packet)
 /***-----------------------------------------***/
 	// frame
 	gtk_tree_store_append(store, &iter, NULL);
-	u_char show_str[100];
+	char show_str[100];
 	sprintf(show_str, "Frame %d, capture length %d bytes", pktno,
 		pkthdr->caplen);
 	gtk_tree_store_set(store, &iter, 0, show_str, -1);
@@ -513,16 +512,16 @@ show_single_packet(int pktno, struct pcap_pkthdr *pkthdr, const u_char * packet)
 			sprintf(show_str, "Packet Length: %u", pkthdr->caplen);
 			break;
 		case 2:
-			sprintf(show_str, "Capture Time: %s [%uus]",
+			sprintf(show_str, "Capture Time: %s [%06ld]",
 				asctime(localtime(&pkthdr->ts.tv_sec)),
-				pkthdr->ts.tv_usec);
+				(long)pkthdr->ts.tv_usec);
 			break;
 		}
 		gtk_tree_store_set(store, &child, 0, show_str, -1);
 	}
 /***-----------------------------------------***/
 	// ethernet
-	u_char ptype[5];
+	char ptype[5];
 	u_short eth_type;
 	struct ether_header *hdr;
 
@@ -546,8 +545,8 @@ show_single_packet(int pktno, struct pcap_pkthdr *pkthdr, const u_char * packet)
 		sprintf(ptype, "%04x", eth_type);
 		break;
 	}
-	u_char src_mac[25];
-	u_char dst_mac[25];
+	char src_mac[25];
+	char dst_mac[25];
 	sprintf(src_mac, "%02x:%02x:%02x:%02x:%02x:%02x", hdr->src_mac[0],
 		hdr->src_mac[1], hdr->src_mac[2], hdr->src_mac[3],
 		hdr->src_mac[4], hdr->src_mac[5]);
@@ -575,13 +574,13 @@ show_single_packet(int pktno, struct pcap_pkthdr *pkthdr, const u_char * packet)
 
 /***-----------------------------------------***/
 	// arp
-	u_char src_ip[20];
-	u_char dst_ip[20];
+	char src_ip[20];
+	char dst_ip[20];
 	if (0x0806 == eth_type) {
 		struct arp_header *hdr;
 
 		u_short oper;
-		u_char operation[20];
+		char operation[20];
 
 		hdr = (struct arp_header *)(packet + 14);
 		oper = ntohs(hdr->oper);
@@ -676,7 +675,7 @@ show_single_packet(int pktno, struct pcap_pkthdr *pkthdr, const u_char * packet)
 		offset = ntohs(hdr->frag_off);
 
 		tprotocol = hdr->protocol;
-		u_char protocol_str[5];
+		char protocol_str[5];
 		switch (hdr->protocol) {
 		case 6:
 			sprintf(protocol_str, "TCP");
@@ -688,7 +687,7 @@ show_single_packet(int pktno, struct pcap_pkthdr *pkthdr, const u_char * packet)
 			sprintf(protocol_str, "ICMP");
 			break;
 		default:
-			sprintf(protocol_str, "");
+			memset(protocol_str, 0, sizeof(protocol_str));
 			break;
 		}
 		// store
@@ -787,7 +786,7 @@ show_single_packet(int pktno, struct pcap_pkthdr *pkthdr, const u_char * packet)
 		struct ipv6_header *hdr;
 		hdr = (struct ipv6_header *)(packet + 14);
 
-		u_char src[50], dst[50], stemp[5], dtemp[5];
+		char src[50], dst[50], stemp[5], dtemp[5];
 		strcpy(src, "");
 		strcpy(dst, "");
 		for (i = 1; i <= 16; i++) {
@@ -860,7 +859,7 @@ show_single_packet(int pktno, struct pcap_pkthdr *pkthdr, const u_char * packet)
 		u_int hlen;
 		u_short dst_port;
 		u_short src_port;
-		u_char protocol_str[10];	// 应用层协议
+		char protocol_str[10];	// 应用层协议
 		hdr = (struct tcp_header *)(packet + 14 + 20);
 		dst_port = ntohs(hdr->dst_port);
 		src_port = ntohs(hdr->src_port);
@@ -886,7 +885,7 @@ show_single_packet(int pktno, struct pcap_pkthdr *pkthdr, const u_char * packet)
 			sprintf(protocol_str, "POP3");
 			break;
 		default:
-			sprintf(protocol_str, "");
+			memset(protocol_str, 0, sizeof(protocol_str));
 			break;
 		}
 		// store
@@ -1017,13 +1016,13 @@ show_single_packet(int pktno, struct pcap_pkthdr *pkthdr, const u_char * packet)
 		gtk_tree_store_append(store, &iter, NULL);
 		gtk_tree_store_set(store, &iter, 0,
 				   "Hypertext Transfer Protocol(HTTP)", -1);
-		u_char *p;
-		u_char http_header[1500];
+		char http_header[1500];
 
 		memcpy(http_header, (packet + 14 + 20 + 20),
 		       pkthdr->caplen - 54);
+		/*
 		p = http_header;
-		/*for (i = 0; i < 3; i++) {
+		for (i = 0; i < 3; i++) {
 		   gtk_tree_store_append(store, &child, &iter);
 		   j=0;
 		   while(*p!='\r'&&*(p+1)!='\n')
@@ -1054,7 +1053,7 @@ show_single_packet(int pktno, struct pcap_pkthdr *pkthdr, const u_char * packet)
 		len = ntohs(hdr->len);
 		chksum = ntohs(hdr->checksum);
 
-		u_char protocol_str[20];
+		char protocol_str[64];
 		switch (dst_port) {
 		case 138:
 			sprintf(protocol_str, "NETBIOS Datagram Service");
@@ -1109,7 +1108,7 @@ show_single_packet(int pktno, struct pcap_pkthdr *pkthdr, const u_char * packet)
 	if (1 == tprotocol) {
 		struct icmp_header *hdr;
 		hdr = (struct icmp_header *)(packet + 14 + 20);
-		u_char icmp_type_str[50];
+		char icmp_type_str[50];
 		switch (hdr->icmp_type) {
 		case 0:
 			sprintf(icmp_type_str, "ICMP Echo Reply Protocol");
@@ -1189,7 +1188,7 @@ show_single_packet(int pktno, struct pcap_pkthdr *pkthdr, const u_char * packet)
 	GtkTreeViewColumn *col;
 	GtkCellRenderer *renderer;
 	GtkTreeModel *model;
-	GtkWidget *view;
+	GtkTreeView *view;
 
 	view = GTK_TREE_VIEW(gtk_builder_get_object(builder,
 						    "treeview_single"));
@@ -1216,7 +1215,7 @@ show_single_packet(int pktno, struct pcap_pkthdr *pkthdr, const u_char * packet)
 */
 void show_raw_packet(u_int caplen, const u_char * packet)
 {
-	g_print("show raw packet\n");
+	//g_print("show raw packet\n");
 	GtkTextView *textview1 =
 	    (GtkTextView *) gtk_builder_get_object(builder, "textview1");
 	GtkTextView *textview2 =
@@ -1231,7 +1230,7 @@ void show_raw_packet(u_int caplen, const u_char * packet)
 	GtkTextBuffer *buffer3 =
 	    gtk_text_view_get_buffer(GTK_TEXT_VIEW(textview3));
 
-	GtkTextIter start, end, iter1, iter2, iter3;
+	GtkTextIter iter1, iter2, iter3;
 
 	/*gtk_text_buffer_get_bounds(buffer1, &start, &end);
 	   gtk_text_buffer_delete(buffer1, &start, &end);
@@ -1248,9 +1247,9 @@ void show_raw_packet(u_int caplen, const u_char * packet)
 	gtk_text_buffer_get_iter_at_offset(buffer1, &iter1, 0);
 	gtk_text_buffer_get_iter_at_offset(buffer2, &iter2, 0);
 	gtk_text_buffer_get_iter_at_offset(buffer3, &iter3, 0);
-	u_char hex[10];
-	u_char str[17];
-	u_char *ch;
+	char hex[10];
+	char str[17];
+	u_char ch;
 	u_int i, j;
 	for (i = 0; i < caplen; i += 16) {
 		sprintf(hex, "%04x\n", i);
@@ -1282,20 +1281,20 @@ void show_raw_packet(u_int caplen, const u_char * packet)
 		gtk_text_buffer_insert(buffer1, &iter1, hex, -1);
 
 		for (j = 0; j < left; j++) {
-			ch = (u_char) * (packet + i + j);
+			ch = *(packet + i + j);
 			sprintf(str, "%02X ", ch);
 			gtk_text_buffer_insert(buffer2, &iter2, str, -1);
 
 			if (ch < 32 || ch > 126)
 				sprintf(str, ".");
 			else
-				sprintf(str, "%c", ch);
+				sprintf(str, "%c", (char)ch);
 			gtk_text_buffer_insert(buffer3, &iter3, str, -1);
 		}
 		//gtk_text_buffer_insert(buffer2, &iter2, "\n", -1);
 		//gtk_text_buffer_insert(buffer3, &iter3, "\n", -1);
 	}
-	g_print("show raw packet end\n");
+	//g_print("show raw packet end\n");
 }
 
 int pktlen = 0;
@@ -1363,6 +1362,7 @@ struct selectRange {
 	int end;
 } srange;
 
+
 /*
 * 高亮选中十六进制区域
 */
@@ -1381,12 +1381,14 @@ void show_selection_hex(struct selectRange *srange)
 	    (GTK_TEXT_VIEW(textview2));
 
 	int line1, line2;
+	//printf("start=%d, end=%d\n", start, end);
 	line1 = start / 16;
 	start = start - 16 * line1;
 	start = start * 3;
 	line2 = end / 16;
 	end = end - 16 * line2;
 	end = end * 3;
+	//printf("line1=%d, line2=%d, start=%d, end=%d\n", line1, line2, start, end);
 	GtkTextIter iter1, iter2;
 	/*select textview2 */
 	gtk_text_buffer_get_iter_at_line_offset(buffer2, &iter1, line1, start);
@@ -1475,7 +1477,7 @@ void on_treeview_single_selection_changed(GtkTreeSelection * select,
 		//pthread_create(&tid1, NULL, (void *)show_selection_hex, &srange);
 		//pthread_create(&tid2, NULL, (void *)show_selection_ascii, &srange);
 
-		g_thread_new("show_hex", show_selection_hex, &srange);
+		g_thread_new("show_hex", (GThreadFunc)show_selection_hex, &srange);
 		//g_thread_new("show_ascii", show_selection_ascii, &srange);
 		//show_selection_ascii(&srange);
 		//show_selection_hex(start ,end);

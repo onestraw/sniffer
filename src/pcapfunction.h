@@ -5,6 +5,8 @@
 #include<stdlib.h>
 #include<time.h>
 #include<string.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
 
 char ifdev[10][10];
 char select_dev[10];
@@ -32,10 +34,6 @@ struct ether_header
 
 typedef u_int32_t in_addr_t;
 
-struct in_addr
-{
-  in_addr_t s_addr;
-};
 //arp
 struct arp_header
 {

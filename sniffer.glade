@@ -362,7 +362,7 @@
     <property name="height_request">650</property>
     <property name="can_focus">False</property>
     <property name="vexpand">True</property>
-    <property name="title" translatable="yes">Hexiaowei's Sniffer</property>
+    <property name="title" translatable="yes">geeksword's sniffer</property>
     <property name="window_position">center</property>
     <property name="icon">icon.jpg</property>
     <signal name="destroy" handler="gtk_main_quit" swapped="no"/>
