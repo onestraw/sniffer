@@ -3,7 +3,7 @@
 
 ##Introduction
 
-**swordSniffer** is a graphical sniffer of network packet on ubuntu.  
+**swordSniffer** is a graphical network packet sniffer.
 
 ##Develop environment
 
@@ -13,8 +13,8 @@
 
 ##Build
 
-- git clone https://github.com/onestraw/traffic-analysis
-- cd traffic-analysis/swordsniffer
+- git clone https://github.com/onestraw/sniffer
+- cd sniffer
 - make
 - sudo ./sniffer
 
