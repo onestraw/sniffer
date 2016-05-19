@@ -5,7 +5,8 @@ extern struct packet_info *phead;
 
 char *packet_list[] =
     { "编号", "捕获时间", "源主机", "目标主机", "协议", "长度",
-"详细信息" };
+	"详细信息"
+};
 
 enum {
 	COL_NO = 0,
@@ -99,8 +100,7 @@ void edit_interface_list_view(GtkWidget * view, int if_num)
 /*
  * menu item
  */
-void
-on_imagemenuitem_interface_activate(GtkMenuItem * menuitem,
+void on_imagemenuitem_interface_activate(GtkMenuItem * menuitem,
 				    GtkWidget * if_window)
 {
 
@@ -131,8 +131,7 @@ on_imagemenuitem_interface_activate(GtkMenuItem * menuitem,
 /*
  * 双击行产生的信号灯select interfaces
  */
-void
-on_treeview_interface_row_activated(GtkTreeView * view,
+void on_treeview_interface_row_activated(GtkTreeView * view,
 				    GtkTreePath * path,
 				    GtkTreeViewColumn * col, gpointer data)
 {
@@ -384,7 +383,7 @@ void on_main_filter_entry_activate(GtkWidget * gw, gpointer data)
 void on_main_set_filter_button_clicked(GtkWidget * gw, gpointer data)
 {
 	GtkEntry *filter_entry;
-	gchar *filter_rule;
+	const gchar *filter_rule;
 	filter_entry =
 	    GTK_ENTRY(gtk_builder_get_object(builder, "main_filter_entry"));
 	filter_rule =
@@ -486,8 +485,7 @@ void on_toolbutton_stop_clicked(GtkWidget * gw, gpointer data)
 /*
  * 在 treeview_single中显示数据包的详细  封装信息
  */
-void
-show_single_packet(int pktno, struct pcap_pkthdr *pkthdr, const u_char * packet)
+void show_single_packet(int pktno, struct pcap_pkthdr *pkthdr, const u_char * packet)
 {
 	GtkTreeStore *store;
 	GtkTreeIter iter, child, grandchild;
@@ -687,7 +685,7 @@ show_single_packet(int pktno, struct pcap_pkthdr *pkthdr, const u_char * packet)
 			sprintf(protocol_str, "ICMP");
 			break;
 		default:
-			memset(protocol_str, 0, sizeof(protocol_str));
+			zero(protocol_str);
 			break;
 		}
 		// store
@@ -814,14 +812,12 @@ show_single_packet(int pktno, struct pcap_pkthdr *pkthdr, const u_char * packet)
 				break;
 			case 1:
 				sprintf(show_str, "Traffic Class: %d",
-					(hdr->
-					 traffic_class_1 << 4) |
+					(hdr->traffic_class_1 << 4) |
 					hdr->traffic_class_2);
 				break;
 			case 2:
 				sprintf(show_str, "Flow Label: %d",
-					(hdr->
-					 flow_label_1 << 16) |
+					(hdr->flow_label_1 << 16) |
 					ntohs(hdr->flow_label_2));
 				break;
 			case 3:
@@ -885,7 +881,7 @@ show_single_packet(int pktno, struct pcap_pkthdr *pkthdr, const u_char * packet)
 			sprintf(protocol_str, "POP3");
 			break;
 		default:
-			memset(protocol_str, 0, sizeof(protocol_str));
+			zero(protocol_str);
 			break;
 		}
 		// store
@@ -980,7 +976,7 @@ show_single_packet(int pktno, struct pcap_pkthdr *pkthdr, const u_char * packet)
 		if (hlen > 20) {	// 报头有选项数据
 			gtk_tree_store_append(store, &child, &iter);
 			gtk_tree_store_set(store, &child, 0, "Options", -1);
-			u_char *p = (packet + 14 + 20 + 20);
+			const u_char *p = (packet + 14 + 20 + 20);
 			u_int mss;
 			mss = ntohl((u_int) * p);
 			for (j = 0; j < 3; j++) {
@@ -1021,8 +1017,8 @@ show_single_packet(int pktno, struct pcap_pkthdr *pkthdr, const u_char * packet)
 		memcpy(http_header, (packet + 14 + 20 + 20),
 		       pkthdr->caplen - 54);
 		/*
-		p = http_header;
-		for (i = 0; i < 3; i++) {
+		   p = http_header;
+		   for (i = 0; i < 3; i++) {
 		   gtk_tree_store_append(store, &child, &iter);
 		   j=0;
 		   while(*p!='\r'&&*(p+1)!='\n')
@@ -1362,7 +1358,6 @@ struct selectRange {
 	int end;
 } srange;
 
-
 /*
 * 高亮选中十六进制区域
 */
@@ -1477,7 +1472,8 @@ void on_treeview_single_selection_changed(GtkTreeSelection * select,
 		//pthread_create(&tid1, NULL, (void *)show_selection_hex, &srange);
 		//pthread_create(&tid2, NULL, (void *)show_selection_ascii, &srange);
 
-		g_thread_new("show_hex", (GThreadFunc)show_selection_hex, &srange);
+		g_thread_new("show_hex", (GThreadFunc) show_selection_hex,
+			     &srange);
 		//g_thread_new("show_ascii", show_selection_ascii, &srange);
 		//show_selection_ascii(&srange);
 		//show_selection_hex(start ,end);
