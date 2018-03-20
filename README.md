@@ -1,4 +1,4 @@
-# swordSniffer
+# swordSniffer [![Build Status](https://travis-ci.org/onestraw/sniffer.svg?branch=master)](https://travis-ci.org/onestraw/sniffer)
 
 A graphical network packet sniffer.
 
